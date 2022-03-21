@@ -31,9 +31,8 @@ class JsonFile():
             json.dump(data, f)
 
 
-def testFileForIntegrity(file_path: list, folder=False):
+def testFileForIntegrity(file_path: list, folder=False, forbidden_character_list = ['<', '>', '"', '/', '\\', '|', '?', '*']):
     for index, item in enumerate(file_path):
-        forbidden_character_list = ['<', '>', '"', '/', '\\', '|', '?', '*']
         assert type(item) == str, f'expected type <str>, recieved type {type(item)}'
         for character in forbidden_character_list:
             assert character not in item, f'args cannot contain {forbidden_character_list} characters: {item}'
