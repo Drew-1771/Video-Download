@@ -15,22 +15,10 @@ import yt_dlp
 
 # local modules
 import fileUtilities
-import twitter_video_dl
-
-
-class ReturnTuple(NamedTuple):
-        url: str
-        file_name: str
-        file_size: str
-        connection: bool
-        done: bool
 
 
 class VideoConnectionError(Exception):
     '''Raised when cannot connect.'''
-
-class InputError(Exception):
-    '''Raised when there is an input error in dev mode'''
 
 
 def generateRandomNumber(low: int, high: int) -> int:
@@ -55,10 +43,13 @@ def generateRandomMP4(folder_path: str, delimiter='/') -> str:
     return path
 
 
-def youtube_download(url: str, folder_path: str, delimiter='/') -> str:
+def video_download(url: str, folder_path: str, delimiter='/') -> str:
     '''
-    Downloads a youtube video given a link and outputs the video to the folder_path. 
+    Downloads a video given a link and outputs the video to the folder_path. 
     Returns the file name.
+    Download supports:
+        - Youtube
+        - Twitter
     '''
     path = generateRandomMP4(folder_path, delimiter)
     try:
@@ -73,37 +64,12 @@ def youtube_download(url: str, folder_path: str, delimiter='/') -> str:
     return path.split(delimiter)[-1]
 
 
-def twitter_download(url: str, folder_path: str, delimiter='/') -> str:
-    '''
-    Downloads a twitter video given a link and outputs the video to the folder_path. 
-    Returns the file name.
-    '''
-    path = generateRandomMP4(folder_path, delimiter)
-    try:
-        urllib.request.urlopen(url)
-    except Exception:
-        raise VideoConnectionError
-
-    # Download
-    try:
-        twitter_video_dl.download_video(url, path)
-    except AssertionError:
-        raise VideoConnectionError
-    return path.split(delimiter)[-1]
-
-
 if __name__ == '__main__':
     print('>>> Running in DEV MODE...')
-    mode = input("Which download?: Y (Youtube, default), T (Twitter): ").lower()
     user_input = input('Enter a URL:')
 
     try:
-        if (mode in ("", "y")):
-            video_return = youtube_download(user_input, "src/vid")
-        elif (mode == "t"):
-            video_return = twitter_download(user_input, "src/vid")
-        else:
-            raise InputError
+        video_return = video_download(user_input, "src/vid")
         print(f'>>> CONNECTED')
         print(f'>>> CREATED vid/{video_return} SUCCESSFULLY')
 
