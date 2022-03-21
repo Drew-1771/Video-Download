@@ -4,9 +4,7 @@
 # videos off of the internet.
 
 # standard libraries
-from typing import NamedTuple
 import urllib.request
-import urllib.parse
 import random
 
 # 3rd party
@@ -25,25 +23,26 @@ def generateRandomNumber(low: int, high: int) -> int:
     return random.randint(low, high)
 
 
-def generateRandomMP4(folder_path: str, delimiter='/') -> str:
+def generateRandomMP4(folder_path: str, extension: str, delimiter: str='/') -> str:
     '''
     Generates a random path to a .mp4 file at the given 
     folder_path (relative to current module position).
     '''
-    folder_path, name = list(folder_path.split(delimiter)), str(generateRandomNumber(0, 999999999)) + '.mp4'
+    folder_path, name = list(folder_path.split(delimiter)), str(generateRandomNumber(0, 999999999))
     folder_path.append(name)
     # If file with the same name is found, 
     # creates a new unique name so as to not override the original.
-    while fileUtilities.fileExists(delimiter.join(folder_path)):
+    while fileUtilities.fileExists(delimiter.join(folder_path)+extension):
         folder_path.pop()
-        name = str(generateRandomNumber(0, 999999999)) + '.mp4'
+        name = str(generateRandomNumber(0, 999999999))
         folder_path.append(name)
     path = delimiter.join(folder_path)
+    folder_path[-1] += extension
     fileUtilities.testFileForIntegrity(folder_path)
     return path
 
 
-def video_download(url: str, folder_path: str, delimiter='/') -> str:
+def video_download(url: str, folder_path: str, extension: str, delimiter: str='/') -> str:
     '''
     Downloads a video given a link and outputs the video to the folder_path. 
     Returns the file name.
@@ -51,7 +50,7 @@ def video_download(url: str, folder_path: str, delimiter='/') -> str:
         - Youtube
         - Twitter
     '''
-    path = generateRandomMP4(folder_path, delimiter)
+    path = generateRandomMP4(folder_path, extension, delimiter)
     try:
         urllib.request.urlopen(url)
     except Exception:
@@ -61,7 +60,7 @@ def video_download(url: str, folder_path: str, delimiter='/') -> str:
     ydl_opts = {'outtmpl': path}
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
-    return path.split(delimiter)[-1]
+    return path.split(delimiter)[-1] + extension
 
 
 if __name__ == '__main__':

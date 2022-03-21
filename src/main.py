@@ -4,7 +4,7 @@
 
 import tkinter
 import tkinter.ttk
-from turtle import down
+import pathlib
 import download
 import fileUtilities
 
@@ -33,7 +33,7 @@ def createDownload(window: tkinter.Tk, tab: tkinter.ttk.Frame, path: str) -> Non
             temp_txt = url_txt.get()
             if (auto_clear_url):
                 url_txt.delete(0, "end")
-            name = download.video_download(temp_txt, path)
+            name = download.video_download(temp_txt, path, ".webm")
             status.config(text=name, bg= "green")
         except download.VideoConnectionError:
             status.config(text="Could not connect", bg= "red2")
@@ -48,8 +48,12 @@ def createDownload(window: tkinter.Tk, tab: tkinter.ttk.Frame, path: str) -> Non
 
 def run():
     # get info
-    #data = fileUtilities.JsonFile("data.json").read()
-    #path = data["download_folder_path"]
+    outer = pathlib.Path(__file__).parent / "data.json"
+    if not (outer.exists()):
+        fileUtilities.JsonFile("data.json").write({"download_folder_path": str(pathlib.Path(__file__).parent.parent / "vid").replace('\\', "/")})
+    data = fileUtilities.JsonFile("data.json").read()
+    path = data["download_folder_path"]
+    print(path)
 
     # Set up window
     window = tkinter.Tk()
@@ -69,7 +73,7 @@ def run():
     tabs.pack(expand = 1, fill ="both")
 
     # populate tabs
-    createDownload(window, download_tab, "vid")
+    createDownload(window, download_tab, path)
     #createSettings(window, settings_tab)
 
     # run

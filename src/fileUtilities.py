@@ -23,7 +23,7 @@ class JsonFile():
     def read(self) -> dict:
         '''Reads the files, decodes it, and returns a dictionary of the data'''
         with pathlib.Path(generatePath(self.getPath())).open('r', encoding='utf-8') as f:
-            return json.loads(''.join([line.strip().replace('\n', '') for line in f]))
+            return json.loads(''.join([line.strip().replace('\n', '').replace('\\', '/') for line in f]))
     
 
     def write(self, data: dict):
@@ -33,7 +33,7 @@ class JsonFile():
 
 def testFileForIntegrity(file_path: list, folder=False):
     for index, item in enumerate(file_path):
-        forbidden_character_list = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
+        forbidden_character_list = ['<', '>', '"', '/', '\\', '|', '?', '*']
         assert type(item) == str, f'expected type <str>, recieved type {type(item)}'
         for character in forbidden_character_list:
             assert character not in item, f'args cannot contain {forbidden_character_list} characters: {item}'
