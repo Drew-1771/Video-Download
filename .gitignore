@@ -1,3 +1,6 @@
+# ignore built output
+Video-Downloader/
+
 # data.json
 src/data.json
 
