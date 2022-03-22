@@ -2,11 +2,9 @@
 #
 # This module handes GUI interface for the program and runs it
 
-from tabnanny import check
 import tkinter
 import tkinter.ttk
 import pathlib
-from turtle import bgcolor
 import download
 import fileUtilities
 
