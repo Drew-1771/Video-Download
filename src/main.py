@@ -10,19 +10,10 @@ import fileUtilities
 
 color = "grey30"
 light_color = "grey40"
+foreground = "white"
 
 
 def createSettings(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
-    path = fileUtilities.JsonFile("data.json").read()["download_folder_path"]
-
-    # current download path labels
-    header = tkinter.Label(tab, text="Output path:")
-    header.config(bg=color, fg="white")
-    header.grid(column=0, row=1, sticky="w")
-    current_path = tkinter.Label(tab, text=path)
-    current_path.config(bg=light_color, fg="white")
-    current_path.grid(column=0, row=2, sticky="w")
-
     # auto clear url button
     def clear_url_clicked():
         data = fileUtilities.JsonFile("data.json").read()
@@ -30,19 +21,28 @@ def createSettings(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
         fileUtilities.JsonFile("data.json").write(data)
     button_flag = tkinter.BooleanVar()
     button_flag.set(fileUtilities.JsonFile("data.json").read()["auto_clear_url"])
-    checkbutton = tkinter.Checkbutton(tab, text="Auto clear url after input", command=clear_url_clicked, variable=button_flag, bg=light_color, fg="white", selectcolor=color)
+    checkbutton = tkinter.Checkbutton(tab, text="Auto clear url after input", command=clear_url_clicked, variable=button_flag, bg=light_color, fg=foreground, selectcolor=color)
     checkbutton.grid(column=0, row=0, sticky="w")
+
+    path = fileUtilities.JsonFile("data.json").read()["download_folder_path"]
+    # current download path labels
+    header = tkinter.Label(tab, text="Output path:")
+    header.config(bg=color, fg=foreground)
+    header.grid(column=0, row=2, sticky="w")
+    current_path = tkinter.Label(tab, text=path)
+    current_path.config(bg=light_color, fg=foreground)
+    current_path.grid(column=0, row=3, sticky="w")
 
 
 def createDownload(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
     # Box for url entry
     url_txt = tkinter.Entry(tab, width=15)
-    url_txt.config(bg=light_color, fg="white")
+    url_txt.config(bg=light_color, fg=foreground)
     url_txt.place(relx=0.5, rely=0.5, relwidth=0.85, relheight=0.15, anchor=tkinter.CENTER)
     
     # Status label
     status = tkinter.Label(tab, text="Waiting...")
-    status.config(bg=light_color, fg="white")
+    status.config(bg=light_color, fg=foreground)
     status.place(relx=0.5, rely=0.35, relwidth=0.5, relheight=0.15, anchor=tkinter.CENTER)
 
     # Download button
@@ -60,7 +60,7 @@ def createDownload(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
             status.config(text="Could not connect", bg= "red2")
     
     download_button = tkinter.Button(tab, text="Download Video", width=15, command=download_clicked)
-    download_button.config(bg=light_color, fg="white")
+    download_button.config(bg=light_color, fg=foreground)
     download_button.place(relx=0.5, rely=0.65, relwidth=0.5, relheight=0.15, anchor=tkinter.CENTER)
     
     # keybind
