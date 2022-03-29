@@ -54,7 +54,7 @@ def createDownload(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
             temp_txt = url_txt.get()
             if (auto_clear_url):
                 url_txt.delete(0, "end")
-            name = download.video_download(temp_txt, path, ".webm")
+            name = download.video_download(temp_txt, path, ".mp4")
             status.config(text=name, bg= "green")
         except download.VideoConnectionError:
             status.config(text="Could not connect", bg= "red2")

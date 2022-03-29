@@ -39,7 +39,7 @@ def generateRandomMP4(folder_path: str, extension: str, delimiter: str='/') -> s
     path = delimiter.join(folder_path)
     folder_path[-1] += extension
     fileUtilities.testFileForIntegrity(folder_path)
-    return path
+    return path + extension
 
 
 def video_download(url: str, folder_path: str, extension: str, delimiter: str='/') -> str:
@@ -60,7 +60,7 @@ def video_download(url: str, folder_path: str, extension: str, delimiter: str='/
     ydl_opts = {'outtmpl': path}
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
-    return path.split(delimiter)[-1] + extension
+    return path.split(delimiter)[-1]
 
 
 if __name__ == '__main__':
