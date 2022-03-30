@@ -1,5 +1,6 @@
 # ignore built output
 Video-Downloader/
+*.zip
 
 # data.json
 src/data.json
@@ -10,8 +11,8 @@ src/data.json
 # videos
 src/vid/
 vid/
-.mp4
-.webm
+*.mp4
+*.webm
 
 # project pycache
 src/__pycache__/
