@@ -34,9 +34,7 @@ def generateRandomMP4(folder_path: str, name: str, extension: str, delimiter: st
     # If file with the same name is found, 
     # creates a new unique name so as to not override the original.
     while pathlib.Path(delimiter.join(folder_path)+extension).exists():
-        folder_path.pop()
-        name = str(generateRandomNumber(0, 999999999))
-        folder_path.append(name)
+        folder_path[-1] = str(generateRandomNumber(0, 999999999))
     path = delimiter.join(folder_path)
     folder_path[-1] += extension
     fileUtilities.testFileForIntegrity(folder_path)
@@ -75,7 +73,7 @@ if __name__ == '__main__':
     try:
         video_return = video_download(user_input, "src/vid")
         print(f'>>> CONNECTED')
-        print(f'>>> CREATED vid/{video_return} SUCCESSFULLY')
+        print(f'>>> CREATED src/vid/{video_return} SUCCESSFULLY')
 
     except Exception as e:
         if type(e) == VideoConnectionError:

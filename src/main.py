@@ -21,7 +21,7 @@ def color_tabs(list_to_color: list, light_color: str, foreground: str):
             item.config(bg=light_color, fg=foreground)
 
 
-def createSettings(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> list:
+def createSettings(tab: tkinter.ttk.Frame) -> list:
     # returns this list to color the tabs later
     return_list = []
 
@@ -134,7 +134,7 @@ def run():
 
     # populate and color tabs
     tabs_to_be_colored = createDownload(window, download_tab)
-    tabs_to_be_colored = tabs_to_be_colored + createSettings(window, settings_tab)
+    tabs_to_be_colored = tabs_to_be_colored + createSettings(settings_tab)
     color_tabs(tabs_to_be_colored, light_color, foreground)
 
     # run

@@ -10,6 +10,8 @@ src/data.json
 # videos
 src/vid/
 vid/
+.mp4
+.webm
 
 # project pycache
 src/__pycache__/
