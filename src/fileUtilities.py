@@ -2,6 +2,11 @@
 #
 # This module provides tools for dealing with
 # files on your system.
+#
+# All functions in this module are relative, meaning
+# the file_path parameter is intended to work off
+# the current directory.
+
 import pathlib
 import json
 

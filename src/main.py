@@ -1,6 +1,9 @@
 # main.py
 #
 # This module handes GUI interface for the program and runs it
+# 
+# See https://github.com/Drew-1771/Python-Video-Download for information
+# about this project.
 
 import tkinter
 import tkinter.ttk
@@ -13,7 +16,15 @@ light_color = "grey40"
 foreground = "white"
 
 
-def createSettings(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
+def color_tabs(list_to_color: list, light_color: str, foreground: str):
+        for item in list_to_color:
+            item.config(bg=light_color, fg=foreground)
+
+
+def createSettings(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> list:
+    # returns this list to color the tabs later
+    return_list = []
+
     # auto clear url button
     def clear_url_clicked():
         data = fileUtilities.JsonFile("data.json").read()
@@ -21,65 +32,93 @@ def createSettings(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
         fileUtilities.JsonFile("data.json").write(data)
     button_flag = tkinter.BooleanVar()
     button_flag.set(fileUtilities.JsonFile("data.json").read()["auto_clear_url"])
-    checkbutton = tkinter.Checkbutton(tab, text="Auto clear url after input", command=clear_url_clicked, variable=button_flag, bg=light_color, fg=foreground, selectcolor=color)
-    checkbutton.grid(column=0, row=0, sticky="w")
+    auto_clear_widget = tkinter.Checkbutton(tab, text="Auto clear url after input", command=clear_url_clicked, variable=button_flag, selectcolor=color)
+    auto_clear_widget.grid(column=0, row=0, sticky="w")
+    return_list.append(auto_clear_widget)
 
     path = fileUtilities.JsonFile("data.json").read()["download_folder_path"]
     # current download path labels
-    header = tkinter.Label(tab, text="Output path:")
-    header.config(bg=color, fg=foreground)
-    header.grid(column=0, row=2, sticky="w")
-    current_path = tkinter.Label(tab, text=path)
-    current_path.config(bg=light_color, fg=foreground)
-    current_path.grid(column=0, row=3, sticky="w")
+    current_path_label_widget = tkinter.Label(tab, text="Output path:")
+    current_path_widget = tkinter.Label(tab, text=path)
+    current_path_label_widget.grid(column=0, row=1, sticky="w")
+    current_path_widget.grid(column=0, row=2, sticky="w")
+    return_list.append(current_path_label_widget)
+    return_list.append(current_path_widget)
+
+    return return_list
 
 
-def createDownload(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
-    # Box for url entry
-    url_txt = tkinter.Entry(tab, width=15)
-    url_txt.config(bg=light_color, fg=foreground)
-    url_txt.place(relx=0.5, rely=0.5, relwidth=0.85, relheight=0.15, anchor=tkinter.CENTER)
-    
+def createDownload(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> list:
+    # returns this list to color the tabs later
+    return_list = []
+
+    # github url label
+    github_label_widget = tkinter.Label(tab, text="https://github.com/Drew-1771/Python-Video-Download")
+    github_label_widget.pack(side=tkinter.TOP, anchor=tkinter.NW)
+    github_label_widget.config(bg=color, fg=foreground)
+
     # Status label
-    status = tkinter.Label(tab, text="Waiting...")
-    status.config(bg=light_color, fg=foreground)
-    status.place(relx=0.5, rely=0.35, relwidth=0.5, relheight=0.15, anchor=tkinter.CENTER)
+    status_label_widget = tkinter.Label(tab, text="Waiting...")
+    status_label_widget.place(relx=0.5, rely=0.30, relwidth=0.5, relheight=0.15, anchor=tkinter.CENTER)
+    return_list.append(status_label_widget)
 
-    # Download button
+    # url entry
+    url_entry_widget = tkinter.Entry(tab, width=15)
+    url_entry_widget.place(relx=0.5, rely=0.45, relwidth=0.85, relheight=0.15, anchor=tkinter.CENTER)
+    return_list.append(url_entry_widget)
+
+    # name label
+    name_label_widget = tkinter.Label(tab, text="Name (optional):")
+    name_label_widget.place(relx=0.125, rely=0.92, relwidth=0.25, relheight=0.15, anchor=tkinter.CENTER)
+    return_list.append(name_label_widget)
+
+    # name entry
+    name_entry_widget = tkinter.Entry(tab, width=15)
+    name_entry_widget.place(relx=0.455, rely=0.92, relwidth=0.4, relheight=0.15, anchor=tkinter.CENTER)
+    return_list.append(name_entry_widget)
+
+    # download button
     def download_clicked(event=False):
         data = fileUtilities.JsonFile("data.json")
         path = data.read()["download_folder_path"]
         auto_clear_url = data.read()["auto_clear_url"]
         try:
-            temp_txt = url_txt.get()
+            temp_txt = url_entry_widget.get()
             if (auto_clear_url):
-                url_txt.delete(0, "end")
-            name = download.video_download(temp_txt, path, ".mp4")
-            status.config(text=name, bg= "green")
+                url_entry_widget.delete(0, "end")
+            if (name_entry_widget.get() == ""):
+                name = str(download.generateRandomNumber(0, 999999999))
+            else:
+                name = name_entry_widget.get()
+            name = download.video_download(temp_txt, path, name, ".mp4")
+            status_label_widget.config(text=name, bg= "green")
+            name_entry_widget.delete(0, "end")
         except download.VideoConnectionError:
-            status.config(text="Could not connect", bg= "red2")
-    
-    download_button = tkinter.Button(tab, text="Download Video", width=15, command=download_clicked)
-    download_button.config(bg=light_color, fg=foreground)
-    download_button.place(relx=0.5, rely=0.65, relwidth=0.5, relheight=0.15, anchor=tkinter.CENTER)
-    
-    # keybind
+            status_label_widget.config(text="Could not connect", bg= "red2")
+    download_button_widget = tkinter.Button(tab, text="Download Video", width=15, command=download_clicked)
+    download_button_widget.place(relx=0.5, rely=0.6, relwidth=0.5, relheight=0.15, anchor=tkinter.CENTER)
+    # keybind for download
     window.bind("<Return>", download_clicked)
+    return_list.append(download_button_widget)
+
+    return return_list
 
 
 def run():
     # get info
-    outer = pathlib.Path(__file__).parent / "data.json"
-    if not (outer.exists()):
-        fileUtilities.JsonFile("data.json").write({"download_folder_path": str(pathlib.Path(__file__).parent.parent / "vid").replace('\\', "/"), "auto_clear_url": True})
-    else:
+    data_path = pathlib.Path(__file__).parent / "data.json"
+    if (data_path.exists()):
         data = fileUtilities.JsonFile("data.json").read()
         data["download_folder_path"] = str(pathlib.Path(__file__).parent.parent / "vid").replace('\\', "/")
         fileUtilities.JsonFile("data.json").write(data)
+    else:
+        # create the data file
+        fileUtilities.JsonFile("data.json").write({"download_folder_path": str(pathlib.Path(__file__).parent.parent / "vid").replace('\\', "/"), "auto_clear_url": True})
+
     # Set up window
     window = tkinter.Tk()
-    window.title("Video Download")
-    window.geometry("300x200")
+    window.title("Video Download v1.3")
+    window.geometry("400x300")
     window.config(bg=color)
 
     # set up tabs
@@ -93,9 +132,10 @@ def run():
     tabs.add(settings_tab, text="Settings")
     tabs.pack(expand = 1, fill ="both")
 
-    # populate tabs
-    createDownload(window, download_tab)
-    createSettings(window, settings_tab)
+    # populate and color tabs
+    tabs_to_be_colored = createDownload(window, download_tab)
+    tabs_to_be_colored = tabs_to_be_colored + createSettings(window, settings_tab)
+    color_tabs(tabs_to_be_colored, light_color, foreground)
 
     # run
     window.mainloop()

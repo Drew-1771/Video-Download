@@ -9,6 +9,7 @@ src/data.json
 
 # videos
 src/vid/
+vid/
 
 # project pycache
 src/__pycache__/
