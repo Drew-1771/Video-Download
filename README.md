@@ -1,5 +1,5 @@
 # Python-Video-Download
-An extremely simple video downloader. Uses the https://github.com/yt-dlp/yt-dlp library to download (twitter, youtube, etc.).
+An extremely simple video downloader. Uses the https://github.com/yt-dlp/yt-dlp library to download.
 
 
 **How to install:**
