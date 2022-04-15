@@ -13,7 +13,7 @@ import json
 
 class JsonFile():
     '''Allows for easy reading/writing of json files.'''
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:
         self.setPath(path)
 
 
@@ -21,7 +21,7 @@ class JsonFile():
         return self._path
     
 
-    def setPath(self, path: str):
+    def setPath(self, path: str) -> None:
        self._path = path
         
 
@@ -31,12 +31,12 @@ class JsonFile():
             return json.loads(''.join([line.strip().replace('\n', '').replace('\\', '/') for line in f]))
     
 
-    def write(self, data: dict):
+    def write(self, data: dict) -> None:
         with pathlib.Path(generatePath(self.getPath())).open('w', encoding='utf-8') as f:
             json.dump(data, f)
 
 
-def testFileForIntegrity(file_path: list, folder=False, forbidden_character_list = ['<', '>', '"', '/', '\\', '|', '?', '*']):
+def testFileForIntegrity(file_path: list, folder=False, forbidden_character_list = ['<', '>', '"', '/', '\\', '|', '?', '*']) -> None:
     for index, item in enumerate(file_path):
         assert type(item) == str, f'expected type <str>, recieved type {type(item)}'
         for character in forbidden_character_list:
@@ -48,7 +48,7 @@ def testFileForIntegrity(file_path: list, folder=False, forbidden_character_list
                 assert '.' not in item, f'folders may not contain a "." character'
 
 
-def printDict(dictionary: dict, level: int=0, _recursive=False) -> 'print':
+def printDict(dictionary: dict, level: int=0, _recursive=False) -> None:
     '''Prints a dictionary in an organized manner.'''
     print(level*'   ' + '{')
 
@@ -103,7 +103,7 @@ def getFileSizeMB(file_path: str, delimiter='/') -> float:
     raise OSError(f'file not found at: {file_path}')
 
 
-def getFileName(file_path: str, delimiter='/', extension=False):
+def getFileName(file_path: str, delimiter='/', extension=False) -> str:
     '''Returns the name of the file (and extension if configured)'''
     if fileExists(file_path):
         file = pathlib.Path(generatePath(file_path, delimiter))
