@@ -13,3 +13,6 @@ An extremely simple video downloader. Uses the https://github.com/yt-dlp/yt-dlp 
 
 **How to update:**
 >Drag the new version to the same directory of the old one and replace all conflicting files.
+
+**What does this work for?**
+>Pretty much every youtube and twitter video. If the yt-dlp library can handle it, it will download it.
