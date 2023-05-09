@@ -122,7 +122,7 @@ def run() -> None:
 
     # Set up window
     window = tkinter.Tk()
-    window.title("Video Download v1.4")
+    window.title("Video Download v1.3.2")
     window.geometry("400x300")
     window.config(bg=color)
 
