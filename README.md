@@ -17,4 +17,4 @@ An extremely simple video downloader. Uses the https://github.com/yt-dlp/yt-dlp 
 **What does this work for?**
 >Pretty much every youtube and twitter video. If the yt-dlp library can handle it, it will download it.
 
->Some examples: youtube, twitter, tiktok
+>Some examples: youtube, ~~twitter~~, tiktok
