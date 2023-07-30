@@ -11,60 +11,71 @@ import pathlib
 import json
 
 
-class JsonFile():
-    '''Allows for easy reading/writing of json files.'''
+class JsonFile:
+    """Allows for easy reading/writing of json files."""
+
     def __init__(self, path: str) -> None:
         self.setPath(path)
 
-
     def getPath(self) -> str:
         return self._path
-    
 
     def setPath(self, path: str) -> None:
-       self._path = path
-        
+        self._path = path
 
     def read(self) -> dict:
-        '''Reads the files, decodes it, and returns a dictionary of the data'''
-        with pathlib.Path(generatePath(self.getPath())).open('r', encoding='utf-8') as f:
-            return json.loads(''.join([line.strip().replace('\n', '').replace('\\', '/') for line in f]))
-    
+        """Reads the files, decodes it, and returns a dictionary of the data"""
+        with pathlib.Path(generatePath(self.getPath())).open(
+            "r", encoding="utf-8"
+        ) as f:
+            return json.loads(
+                "".join(
+                    [line.strip().replace("\n", "").replace("\\", "/") for line in f]
+                )
+            )
 
     def write(self, data: dict) -> None:
-        with pathlib.Path(generatePath(self.getPath())).open('w', encoding='utf-8') as f:
+        with pathlib.Path(generatePath(self.getPath())).open(
+            "w", encoding="utf-8"
+        ) as f:
             json.dump(data, f)
 
 
-def testFileForIntegrity(file_path: list, folder=False, forbidden_character_list = ['<', '>', '"', '/', '\\', '|', '?', '*']) -> None:
+def testFileForIntegrity(
+    file_path: list,
+    folder=False,
+    forbidden_character_list=["<", ">", '"', "/", "\\", "|", "?", "*"],
+) -> None:
     for index, item in enumerate(file_path):
-        assert type(item) == str, f'expected type <str>, recieved type {type(item)}'
+        assert type(item) == str, f"expected type <str>, recieved type {type(item)}"
         for character in forbidden_character_list:
-            assert character not in item, f'args cannot contain {forbidden_character_list} characters: {item}'
+            assert (
+                character not in item
+            ), f"args cannot contain {forbidden_character_list} characters: {item}"
         if not folder:
-            if (index == len(file_path) - 1):
-                assert '.' in item, f'final location must have an extension: {item}'
+            if index == len(file_path) - 1:
+                assert "." in item, f"final location must have an extension: {item}"
             else:
-                assert '.' not in item, f'folders may not contain a "." character'
+                assert "." not in item, f'folders may not contain a "." character'
 
 
-def printDict(dictionary: dict, level: int=0, _recursive=False) -> None:
-    '''Prints a dictionary in an organized manner.'''
-    print(level*'   ' + '{')
+def printDict(dictionary: dict, level: int = 0, _recursive=False) -> None:
+    """Prints a dictionary in an organized manner."""
+    print(level * "   " + "{")
 
     for item in dictionary:
-        print(level*'   ', item, end='')
+        print(level * "   ", item, end="")
         if type(dictionary[item]) == dict:
-            print(':')
+            print(":")
             printDict(dictionary[item], (level + 1))
         else:
-            print(':\n', (level + 1)*'    ', dictionary[item])
+            print(":\n", (level + 1) * "    ", dictionary[item])
 
-    print(level*'   ' + '}')
-        
+    print(level * "   " + "}")
 
-def generatePath(file_path: str, delimiter='/', folder=False) -> str:
-    '''
+
+def generatePath(file_path: str, delimiter="/", folder=False) -> str:
+    """
     Returns a string of a file path. The file path is an extension of the current
     folder this module is working in. Generating paths inside of folders can be done
     by passing thing such as "folder/folder/file.txt".
@@ -73,7 +84,7 @@ def generatePath(file_path: str, delimiter='/', folder=False) -> str:
     a folder.
 
     The delimiter is what you use to separate folders in the file_path str. The default is /.
-    '''
+    """
     file_path = list(file_path.split(delimiter))
     testFileForIntegrity(file_path, folder)
 
@@ -88,24 +99,29 @@ def generatePath(file_path: str, delimiter='/', folder=False) -> str:
     return str(current_path)
 
 
-def fileExists(file_path: str, delimiter='/') -> bool:
-    '''
+def fileExists(file_path: str, delimiter="/") -> bool:
+    """
     Returns a bool whether the specified file exists or not
-    '''
+    """
     if pathlib.Path(generatePath(file_path, delimiter)).exists():
         return True
     return False
 
 
-def getFileSizeMB(file_path: str, delimiter='/') -> float:
+def getFileSizeMB(file_path: str, delimiter="/") -> float:
     if fileExists(file_path):
-        return round(pathlib.Path(generatePath(file_path, delimiter)).stat().st_size / 1024 / 1024, 2)
-    raise OSError(f'file not found at: {file_path}')
+        return round(
+            pathlib.Path(generatePath(file_path, delimiter)).stat().st_size
+            / 1024
+            / 1024,
+            2,
+        )
+    raise OSError(f"file not found at: {file_path}")
 
 
-def getFileName(file_path: str, delimiter='/', extension=False) -> str:
-    '''Returns the name of the file (and extension if configured)'''
+def getFileName(file_path: str, delimiter="/", extension=False) -> str:
+    """Returns the name of the file (and extension if configured)"""
     if fileExists(file_path):
         file = pathlib.Path(generatePath(file_path, delimiter))
         return file.stem if not extension else file.name
-    raise OSError(f'file not found at: {file_path}')
+    raise OSError(f"file not found at: {file_path}")
