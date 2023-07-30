@@ -61,6 +61,13 @@ def createDownload(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
     github_label_widget.pack(side=tkinter.TOP, anchor=tkinter.NW)
     github_label_widget.config(bg=color, fg=foreground)
 
+    # keybind labels
+    keybind_label_widget = tkinter.Label(
+        tab, text="Shortcuts:\nENTER to download\nRIGHT CLICK to paste"
+    )
+    keybind_label_widget.pack(side=tkinter.BOTTOM, anchor=tkinter.SE)
+    keybind_label_widget.config(bg=color, fg=foreground)
+
     # Status label
     status_label_widget = tkinter.Label(tab, text="Waiting...")
     status_label_widget.place(
@@ -158,7 +165,7 @@ def run() -> None:
 
     # Set up window
     window = tkinter.Tk()
-    window.title("Video Download v1.3.2")
+    window.title("Video Download v1.3.3")
     window.geometry("400x300")
     window.config(bg=color)
 
