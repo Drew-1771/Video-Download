@@ -2,11 +2,13 @@
 #
 # This module handes GUI interface for the program and runs it
 #
-# See https://github.com/Drew-1771/Python-Video-Download for information
+# See https://github.com/Drew-1771/Video-Download for information
 # about this project.
 
 import tkinter
 import tkinter.ttk
+from tkinter import filedialog
+from PIL import Image, ImageTk, UnidentifiedImageError
 import pathlib
 import download
 import fileUtilities
@@ -53,10 +55,108 @@ def createSettings(tab: tkinter.ttk.Frame) -> None:
     TABS.append(current_path_widget)
 
 
+def createImageConvert(tab: tkinter.ttk.Frame) -> None:
+    def select_file():
+        filename = filedialog.askopenfilename(
+            title="Select image file (PNG, JPG, WEBP)",
+            initialdir=f"{pathlib.Path(pathlib.Path.cwd() / 'vid')}",
+        )
+        if filename:
+            try:
+                # reset buttons
+                file_entry_widget.config(text="Open File", bg=light_color)
+                file_save_widget.config(text="Save File", bg=light_color)
+
+                # load image
+                img = ImageTk.PhotoImage(Image.open(filename))
+                # get preview
+                img_preview = ImageTk.PhotoImage(
+                    Image.open(filename).resize(
+                        (
+                            img_widget_preview.winfo_width(),
+                            img_widget_preview.winfo_height(),
+                        )
+                    )
+                )
+                # update image and preview
+                img_widget.configure(image=img)
+                img_widget_preview.configure(image=img_preview)
+                img_widget.image = img
+                img_widget_preview.image = img_preview
+
+            except UnidentifiedImageError:
+                file_entry_widget.config(text="Could not load", bg="red2")
+                img_widget.configure(image=None)
+                img_widget_preview.configure(image=None)
+                img_widget.image = None
+                img_widget_preview.image = None
+
+    def convert_file():
+        try:
+            data = fileUtilities.JsonFile("data.json")
+            path = data.read()["download_folder_path"]
+
+            new_im = ImageTk.getimage(img_widget.image).convert("RGB")
+            filename = filedialog.asksaveasfilename(
+                title="Save image file as (PNG, JPG)",
+                filetypes=[("jpg file", ".jpg"), ("png file", ".png")],
+                defaultextension=".jpg",
+                initialfile=str(download.generateRandomNumber(0, 999999999)) + ".jpg",
+                initialdir=path,
+            )
+            if filename:
+                new_im.save(filename)
+                size = round(
+                    pathlib.Path(filename).stat().st_size / 1024 / 1024,
+                    2,
+                )
+                file_save_widget.config(text=f"{size}mb", bg="green")
+        except AttributeError:
+            file_save_widget.config(text="None loaded", bg="red2")
+
+    # github url label
+    github_label_widget = tkinter.Label(
+        tab, text="https://github.com/Drew-1771/Video-Download"
+    )
+    github_label_widget.pack(side=tkinter.TOP, anchor=tkinter.NW)
+    github_label_widget.config(bg=color, fg=foreground)
+
+    # image label
+    img_widget = tkinter.Label(tab)
+    img_widget_preview = tkinter.Label(tab)
+    img_widget_preview.place(
+        relx=0.5,
+        rely=0.5,
+        relwidth=0.75,
+        relheight=0.75,
+        anchor=tkinter.CENTER,
+    )
+    img_widget_preview.config(bg="gray")
+
+    # file entry
+    file_entry_widget = tkinter.Button(
+        tab, text="Open File", command=select_file, width=15, takefocus=False
+    )
+    file_entry_widget.place(
+        relx=0.3, rely=0.9, relwidth=0.4, relheight=0.1, anchor=tkinter.CENTER
+    )
+
+    # file save
+    file_save_widget = tkinter.Button(
+        tab, text="Save File", command=convert_file, width=15, takefocus=False
+    )
+    file_save_widget.place(
+        relx=0.7, rely=0.9, relwidth=0.4, relheight=0.1, anchor=tkinter.CENTER
+    )
+
+    TABS.append(file_entry_widget)
+    TABS.append(file_save_widget)
+
+
 def createDownload(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
     # github url label
     github_label_widget = tkinter.Label(
-        tab, text="https://github.com/Drew-1771/Python-Video-Download"
+        tab, text="https://github.com/Drew-1771/Video-Download"
     )
     github_label_widget.pack(side=tkinter.TOP, anchor=tkinter.NW)
     github_label_widget.config(bg=color, fg=foreground)
@@ -165,7 +265,7 @@ def run() -> None:
 
     # Set up window
     window = tkinter.Tk()
-    window.title("Video Download v1.3.3")
+    window.title("Video Download v1.4")
     window.geometry("400x300")
     window.config(bg=color)
 
@@ -175,13 +275,16 @@ def run() -> None:
     tkinter.ttk.Style().configure("TNotebook", background=color, foreground=light_color)
 
     download_tab = tkinter.Frame(tabs, bg=color)
+    convert_image_tab = tkinter.Frame(tabs, bg=color)
     settings_tab = tkinter.Frame(tabs, bg=color)
     tabs.add(download_tab, text="Download")
+    tabs.add(convert_image_tab, text="Convert Images")
     tabs.add(settings_tab, text="Settings")
     tabs.pack(expand=1, fill="both")
 
     # populate and color tabs
     createDownload(window, download_tab)
+    createImageConvert(convert_image_tab)
     createSettings(settings_tab)
     color_tabs(light_color, foreground)
 
