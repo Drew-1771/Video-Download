@@ -12,6 +12,7 @@ from PIL import Image, ImageTk, UnidentifiedImageError
 import pathlib
 import download
 import fileUtilities
+import sys
 
 color = "grey30"
 light_color = "grey40"
@@ -156,24 +157,11 @@ def createImageConvert(tab: tkinter.ttk.Frame) -> None:
 def createDownload(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
     # github url label
     github_label_widget = tkinter.Label(
-        tab, text="https://github.com/Drew-1771/Video-Download"
+        tab,
+        text="https://github.com/Drew-1771/Video-Download",
     )
     github_label_widget.pack(side=tkinter.TOP, anchor=tkinter.NW)
     github_label_widget.config(bg=color, fg=foreground)
-
-    # keybind labels
-    keybind_label_widget = tkinter.Label(
-        tab, text="Shortcuts:\nENTER to download\nRIGHT CLICK to paste"
-    )
-    keybind_label_widget.pack(side=tkinter.BOTTOM, anchor=tkinter.SE)
-    keybind_label_widget.config(bg=color, fg=foreground)
-
-    # Status label
-    status_label_widget = tkinter.Label(tab, text="Waiting...")
-    status_label_widget.place(
-        relx=0.5, rely=0.30, relwidth=0.5, relheight=0.15, anchor=tkinter.CENTER
-    )
-    TABS.append(status_label_widget)
 
     # url entry
     url_entry_widget = tkinter.Entry(tab, width=15)
@@ -182,50 +170,61 @@ def createDownload(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
     )
     TABS.append(url_entry_widget)
 
-    # name label
-    name_label_widget = tkinter.Label(tab, text="Name (optional):")
-    name_label_widget.place(
-        relx=0.125, rely=0.92, relwidth=0.25, relheight=0.15, anchor=tkinter.CENTER
+    # console output
+    std_box = tkinter.Text(tab, wrap="word", height=12, width=30, bg=color)
+    std_box.place(
+        relx=0.5, rely=0.65, relwidth=0.85, relheight=0.25, anchor=tkinter.CENTER
     )
-    TABS.append(name_label_widget)
-
-    # name entry
-    name_entry_widget = tkinter.Entry(tab, width=15)
-    name_entry_widget.place(
-        relx=0.455, rely=0.92, relwidth=0.4, relheight=0.15, anchor=tkinter.CENTER
-    )
-    TABS.append(name_entry_widget)
 
     # download button
     def download_clicked(event=False) -> None:
+        # reset button
+        download_button_widget.config(text="Download Video", bg=light_color)
+
         data = fileUtilities.JsonFile("data.json")
         path = data.read()["download_folder_path"]
-        auto_clear_url = data.read()["auto_clear_url"]
-        try:
-            temp_txt = url_entry_widget.get()
-            if auto_clear_url:
-                url_entry_widget.delete(0, "end")
-            if name_entry_widget.get() == "":
-                name = str(download.generateRandomNumber(0, 999999999))
-            else:
-                name = name_entry_widget.get()
-            name = download.video_download(temp_txt, path, name, ".mp4")
-            size = round(
-                pathlib.Path(pathlib.Path(path) / pathlib.Path(name)).stat().st_size
-                / 1024
-                / 1024,
-                2,
-            )
-            status_label_widget.config(text=name + f" @ {size}mb", bg="green")
-            name_entry_widget.delete(0, "end")
-        except download.VideoConnectionError:
-            status_label_widget.config(text="Could not connect", bg="red2")
+        filename = filedialog.asksaveasfilename(
+            title="Save video",
+            filetypes=[("mp4 file", ".mp4")],
+            defaultextension=".mp4",
+            initialfile=str(download.generateRandomNumber(0, 999999999)),
+            initialdir=path,
+        )
+        if filename:
+            # update status
+            download_button_widget.config(text="Trying...", bg=light_color)
+            tkinter.Tk.update(window)
+
+            auto_clear_url = data.read()["auto_clear_url"]
+            try:
+                temp_txt = url_entry_widget.get()
+                if auto_clear_url:
+                    url_entry_widget.delete(0, "end")
+
+                filename = pathlib.Path(filename)
+                # get file
+                if filename.suffixes:
+                    first = filename.suffixes[0]
+                    filename = filename.parent / filename.name.split(first)[0]
+                file = download.video_download(temp_txt, str(filename))
+                # display size
+                size = round(
+                    pathlib.Path(file).stat().st_size / 1024 / 1024,
+                    2,
+                )
+                download_button_widget.config(
+                    text=filename.stem + f" @ {size}mb", bg="green"
+                )
+                # touch to update
+                pathlib.Path(file).touch(exist_ok=True)
+            except download.VideoConnectionError:
+                download_button_widget.config(text="Could not connect", bg="red2")
 
     download_button_widget = tkinter.Button(
         tab, text="Download Video", width=15, command=download_clicked
     )
     download_button_widget.place(
-        relx=0.5, rely=0.6, relwidth=0.5, relheight=0.15, anchor=tkinter.CENTER
+        relx=0.5, rely=0.30, relwidth=0.5, relheight=0.15, anchor=tkinter.CENTER
     )
     TABS.append(download_button_widget)
 
@@ -265,7 +264,7 @@ def run() -> None:
 
     # Set up window
     window = tkinter.Tk()
-    window.title("Video Download v1.4")
+    window.title("Video Download v1.5")
     window.geometry("400x300")
     window.config(bg=color)
 

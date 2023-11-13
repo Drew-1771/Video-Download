@@ -20,64 +20,68 @@ class VideoConnectionError(Exception):
     """Raised when cannot connect."""
 
 
+class FileNameError(Exception):
+    """Raised when filename cannot be determined after download."""
+
+
 def generateRandomNumber(low: int, high: int) -> int:
     return random.randint(low, high)
 
 
-def generateRandomMP4(
-    folder_path: str, name: str, extension: str, delimiter: str = "/"
-) -> str:
-    """
-    Generates a random path to a .mp4 file at the given
-    folder_path (relative to current module position).
-    """
-    folder_path = list(folder_path.split(delimiter))
-    folder_path.append(name)
-    # If file with the same name is found,
-    # creates a new unique name so as to not override the original.
-    while pathlib.Path(delimiter.join(folder_path) + extension).exists():
-        folder_path[-1] = str(generateRandomNumber(0, 999999999))
-    path = delimiter.join(folder_path)
-    folder_path[-1] += extension
-    fileUtilities.testFileForIntegrity(folder_path)
-    return path + extension
-
-
-def video_download(
-    url: str, folder_path: str, name: str, extension: str, delimiter: str = "/"
-) -> str:
+def video_download(url: str, path: str, isPlaylist=False) -> (str, int):
     """
     Downloads a video given a link and outputs the video to the folder_path.
-    Returns the file name.
-    Download supports:
-        - Youtube
-        - Twitter
+    Returns the file size.
+    -1 means download was successful but error w/ size calculation
     """
-    path = generateRandomMP4(folder_path, name, extension, delimiter)
+    # if twitter url, replace x.com w/ twitter.com
+    if "x.com" in url:
+        url = url.replace("x.com", "twitter.com")
+        print(url)
+
+    # probe for connection
     try:
         urllib.request.urlopen(url)
     except Exception:
         raise VideoConnectionError
 
     # Download
+    file_path = None
     try:
-        ydl_opts = {"outtmpl": path}
+        ydl_opts = {
+            "outtmpl": f"{path}.%(ext)s",
+            "playlist_items": "1",
+        }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+            info_dict = ydl.extract_info(url, download=True)
+            try:
+                file_path = pathlib.Path(path).parent / (
+                    pathlib.Path(path).name + "." + info_dict["ext"]
+                )
+            except KeyError:
+                try:
+                    file_path = pathlib.Path(path).parent / (
+                        pathlib.Path(path).name + "." + info_dict["entries"][0]["ext"]
+                    )
+                except KeyError:
+                    # file size could not be calculated for some reason
+                    raise FileNameError
     except yt_dlp.utils.DownloadError:
         raise VideoConnectionError
 
-    return path.split(delimiter)[-1]
+    return file_path
 
 
 if __name__ == "__main__":
     print(">>> Running in DEV MODE...")
     user_input = input("Enter a URL:")
 
+    where = "src/vid/" + str(generateRandomNumber(0, 9999999))
+
     try:
-        video_return = video_download(user_input, "src/vid")
+        video_return = video_download(user_input, where)
         print(f">>> CONNECTED")
-        print(f">>> CREATED src/vid/{video_return} SUCCESSFULLY")
+        print(f">>> CREATED {video_return} SUCCESSFULLY")
 
     except Exception as e:
         if type(e) == VideoConnectionError:
