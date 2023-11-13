@@ -13,6 +13,7 @@ import pathlib
 import download
 import fileUtilities
 import sys
+import math
 
 color = "grey30"
 light_color = "grey40"
@@ -20,6 +21,34 @@ foreground = "white"
 
 # List of tabs that currently exist
 TABS = []
+
+
+class StdoutRedirector(object):
+    def __init__(self, window, progress_bar, text_widget):
+        self.window = window
+        self.progress_bar = progress_bar
+        self.text_space = text_widget
+
+    def write(self, string: str):
+        if string.strip() == "\n":
+            return
+        if "[download]" in string and "Completed" in string:
+            pass
+        elif "[download]" in string and "Finished" in string:
+            return
+        elif "[download]" in string and "Destination:" not in string:
+            substring = string.split(" ")
+            for string in substring:
+                if "%" in string:
+                    self.progress_bar["value"] = math.floor(
+                        float(string.replace("%", ""))
+                    )
+                    return
+        self.text_space.insert("end", string)
+        self.text_space.see("end")
+
+    def flush(self):
+        tkinter.Tk.update(self.window)
 
 
 def color_tabs(light_color: str, foreground: str) -> None:
@@ -48,7 +77,7 @@ def createSettings(tab: tkinter.ttk.Frame) -> None:
 
     path = fileUtilities.JsonFile("data.json").read()["download_folder_path"]
     # current download path labels
-    current_path_label_widget = tkinter.Label(tab, text="Output path:")
+    current_path_label_widget = tkinter.Label(tab, text="Default output path:")
     current_path_widget = tkinter.Label(tab, text=path)
     current_path_label_widget.grid(column=0, row=1, sticky="w")
     current_path_widget.grid(column=0, row=2, sticky="w")
@@ -170,16 +199,44 @@ def createDownload(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
     )
     TABS.append(url_entry_widget)
 
-    # console output
-    std_box = tkinter.Text(tab, wrap="word", height=12, width=30, bg=color)
-    std_box.place(
-        relx=0.5, rely=0.65, relwidth=0.85, relheight=0.25, anchor=tkinter.CENTER
+    # progress bar (jumping thru hoops simulator)
+    style = tkinter.ttk.Style()
+    style.theme_use("clam")
+    style.configure("1.Horizontal.TProgressbar", troughcolor=color, background="green")
+    progress_bar = tkinter.ttk.Progressbar(
+        tab,
+        style="1.Horizontal.TProgressbar",
+        orient=tkinter.HORIZONTAL,
+        length=160,
+        mode="determinate",
     )
+    progress_bar.place(
+        relx=0.5, rely=0.9, relwidth=0.85, relheight=0.05, anchor=tkinter.CENTER
+    )
+
+    # console output
+    std_box = tkinter.Text(
+        tab,
+        wrap="word",
+        height=30,
+        width=30,
+        fg="snow",
+        bg="gray20",
+        font=("Arial", 9),
+    )
+    std_box.place(
+        relx=0.5, rely=0.7, relwidth=0.85, relheight=0.35, anchor=tkinter.CENTER
+    )
+    sys.stdout = StdoutRedirector(tab, progress_bar, std_box)
 
     # download button
     def download_clicked(event=False) -> None:
         # reset button
         download_button_widget.config(text="Download Video", bg=light_color)
+        # reset progress bar
+        progress_bar["value"] = 0
+        # reset text bot
+        std_box.delete(1.0, tkinter.END)
 
         data = fileUtilities.JsonFile("data.json")
         path = data.read()["download_folder_path"]
@@ -217,8 +274,12 @@ def createDownload(window: tkinter.Tk, tab: tkinter.ttk.Frame) -> None:
                 )
                 # touch to update
                 pathlib.Path(file).touch(exist_ok=True)
+                # print finish confirm
+                print(f"[download] Completed @ {size}mb")
             except download.VideoConnectionError:
                 download_button_widget.config(text="Could not connect", bg="red2")
+                # reset progress bar
+                progress_bar["value"] = 0
 
     download_button_widget = tkinter.Button(
         tab, text="Download Video", width=15, command=download_clicked

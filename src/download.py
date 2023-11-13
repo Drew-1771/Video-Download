@@ -34,15 +34,16 @@ def video_download(url: str, path: str, isPlaylist=False) -> (str, int):
     Returns the file size.
     -1 means download was successful but error w/ size calculation
     """
-    # if twitter url, replace x.com w/ twitter.com
-    if "x.com" in url:
-        url = url.replace("x.com", "twitter.com")
-        print(url)
 
     # probe for connection
     try:
         urllib.request.urlopen(url)
     except Exception:
+        # if twitter url, replace x.com w/ twitter.com
+        if "x.com" in url:
+            url = url.replace("x.com", "twitter.com")
+            print("trying x.com -> twitter.com")
+            return video_download(url, path, isPlaylist=isPlaylist)
         raise VideoConnectionError
 
     # Download
