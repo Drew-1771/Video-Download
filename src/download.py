@@ -48,27 +48,34 @@ def video_download(url: str, path: str, isPlaylist=False) -> (str, int):
 
     # Download
     file_path = None
-    try:
+    if(isPlaylist):
         ydl_opts = {
-            "outtmpl": f"{path}.%(ext)s",
-            "playlist_items": "1",
-        }
+                "outtmpl": f'{path}_%(title)s.%(ext)s',
+            }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=True)
-            try:
-                file_path = pathlib.Path(path).parent / (
-                    pathlib.Path(path).name + "." + info_dict["ext"]
-                )
-            except KeyError:
+    else:
+        try:
+            ydl_opts = {
+                "outtmpl": f"{path}.%(ext)s",
+                "playlist_items": "1",
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info_dict = ydl.extract_info(url, download=True)
                 try:
                     file_path = pathlib.Path(path).parent / (
-                        pathlib.Path(path).name + "." + info_dict["entries"][0]["ext"]
+                        pathlib.Path(path).name + "." + info_dict["ext"]
                     )
                 except KeyError:
-                    # file size could not be calculated for some reason
-                    raise FileNameError
-    except yt_dlp.utils.DownloadError:
-        raise VideoConnectionError
+                    try:
+                        file_path = pathlib.Path(path).parent / (
+                            pathlib.Path(path).name + "." + info_dict["entries"][0]["ext"]
+                        )
+                    except KeyError:
+                        # file size could not be calculated for some reason
+                        raise FileNameError
+        except yt_dlp.utils.DownloadError:
+            raise VideoConnectionError
 
     return file_path
 
