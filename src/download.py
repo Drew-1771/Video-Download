@@ -12,7 +12,6 @@ import random
 import yt_dlp
 
 # local modules
-import fileUtilities
 import pathlib
 
 
@@ -28,7 +27,7 @@ def generateRandomNumber(low: int, high: int) -> int:
     return random.randint(low, high)
 
 
-def video_download(url: str, path: str, isPlaylist=False) -> (str, int):
+def video_download(url: str, path: str, isPlaylist=False) -> tuple[str, int]:
     """
     Downloads a video given a link and outputs the video to the folder_path.
     Returns the file size.
@@ -39,19 +38,20 @@ def video_download(url: str, path: str, isPlaylist=False) -> (str, int):
     try:
         urllib.request.urlopen(url)
     except Exception:
-        # if twitter url, replace x.com w/ twitter.com
-        if "x.com" in url:
-            url = url.replace("x.com", "twitter.com")
-            print("trying x.com -> twitter.com")
-            return video_download(url, path, isPlaylist=isPlaylist)
         raise VideoConnectionError
+
+    # if twitter url, replace x.com w/ twitter.com
+    if "/x.com" in url:
+        url = url.replace("x.com", "twitter.com")
+        print("trying x.com -> twitter.com")
+        return video_download(url, path, isPlaylist=isPlaylist)
 
     # Download
     file_path = None
-    if(isPlaylist):
+    if isPlaylist:
         ydl_opts = {
-                "outtmpl": f'{path}_%(title)s.%(ext)s',
-            }
+            "outtmpl": f"{path}_%(title)s.%(ext)s",
+        }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=True)
     else:
@@ -69,7 +69,9 @@ def video_download(url: str, path: str, isPlaylist=False) -> (str, int):
                 except KeyError:
                     try:
                         file_path = pathlib.Path(path).parent / (
-                            pathlib.Path(path).name + "." + info_dict["entries"][0]["ext"]
+                            pathlib.Path(path).name
+                            + "."
+                            + info_dict["entries"][0]["ext"]
                         )
                     except KeyError:
                         # file size could not be calculated for some reason
